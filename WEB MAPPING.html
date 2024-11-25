@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Routing App</title>
+    <link rel="stylesheet" href="WEBMAPPING.css" />
+    <link rel="" href="Home.html"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"/>
+    <link rel="stylesheet" href="L.Control.SlideMenu.css" />
+
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+</head>
+<body>
+    <div class="topnav" id="myTopnav">
+      <a href="Home.html" class="active">Home</a>
+      <a href="https://chat.whatsapp.com/JfambiTreQ0DDs8JXF8kbu">Contacts</a>
+      <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+        <i class="fa fa-bars"></i>
+      </a>
+    </div>
+    
+    <div id="map" style="height: 535px;"></div>
+    
+    <script>
+        var map = L.map('map').setView([-0.398140, 36.960882], 16);
+
+        var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 35,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        });
+        osm.addTo(map);
+
+        // Check for geolocation
+        if (!navigator.geolocation) {
+            console.log("Your browser doesn't support geolocation feature");
+        } else {
+            navigator.geolocation.getCurrentPosition(getPosition);
+        }
+
+        function getPosition(position) {
+            var lat = position.coords.latitude;
+            var long = position.coords.longitude;
+            var accuracy = position.coords.accuracy;
+
+            var userMarker = L.marker([lat, long], {icon: taxiIcon}).addTo(map);
+            var circle = L.circle([lat, long], {radius: accuracy}).addTo(map);
+
+            L.featureGroup([userMarker, circle]).addTo(map);
+
+            console.log("Your coordinate is: lat:" + lat, "long:" + long, "Accuracy:" + accuracy);
+        }
+
+        // Add geocoder
+        L.Control.geocoder().addTo(map);
+
+        // Base layers
+        var Esri_WorldStreetMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri'
+        });
+
+        var Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri'
+        });
+
+        var baseLayers = {
+            "OpenStreetMap": osm,
+            "Satellite": Esri_WorldImagery,
+            "Google Map": Esri_WorldStreetMap,
+        };
+
+        L.control.layers(baseLayers).addTo(map);
+
+        // Define a custom icon
+        var taxiIcon = L.icon({
+            // iconUrl: 'taxi.jpg',
+            iconSize: [30, 30]
+        });
+
+        // Routing control
+        map.on('click', function (e) {
+            console.log(e);
+            var destinationMarker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(map);
+            L.Routing.control({
+                waypoints: [
+                    L.latLng(-0.398140, 36.960882),
+                    L.latLng(e.latlng.lat, e.latlng.lng)
+                ]
+            }).on('routesfound', function (e) {
+                console.log(e);
+            }).addTo(map);
+        });
+
+        // Add the GeoJSON feature to the map
+        var geojsonFeature = {"type":"FeatureCollection", "features": [
+{"type":"Feature","geometry":{"type":"LineString","coordinates":[[36.95743748862304,-0.3964684124470306],[36.95855618970091,-0.3958606316540779],[36.95943135409902,-0.3970020914865832],[36.95958579614278,-0.3978633332396126],[36.95940710557267,-0.3979528004943101],[36.96001157685332,-0.3984770304158594],[36.96076854150706,-0.3989216349620756],[36.96098463782448,-0.3994191954768165],[36.9632935979958,-0.3994983681879621],[36.96333639332502,-0.3988387680602408],[36.96375567042822,-0.3987911444930285],[36.96377865788939,-0.3973400826645524],[36.96389456995158,-0.3951907706125496],[36.96090006987314,-0.3943068589152983],[36.96126449420029,-0.3938527666331798],[36.96278063695762,-0.3927161020291269],[36.96267012634449,-0.392399493051053],[36.96172934782807,-0.3920407431153336],[36.96088814460229,-0.3911352277238712],[36.95965842388424,-0.3897700421893281],[36.95687508731079,-0.3900659284349144],[36.95715595236697,-0.3931672819909927],[36.95753970787574,-0.3959363326876273],[36.95741814219951,-0.3965407541160321]]},"properties":{"name":"Dekut","styleUrl":"#m_ylw-pushpin","icon-scale":1.1,"icon-offset":[20,2],"icon-offset-units":["pixels","pixels"],"icon":"http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png"}}
+]};
+
+        // L.geoJSON(geojsonFeature).addTo(map);
+    </script>
+    
+    <div class="footer">
+        <h3>&copy; Geo-Innovators KE 2024</h3>
+    </div>
+</body>
+</html>
